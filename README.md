@@ -39,7 +39,7 @@ Un sistema web completo para el control de asistencia de empleados desarrollado 
 
 ### 1. Clonar el Repositorio
 ```bash
-git clone https://github.com/tu-usuario/sistema-asistencia.git
+git clone https://github.com/NyoWynn/sistema-asistencia.git
 cd sistema-asistencia
 ```
 
