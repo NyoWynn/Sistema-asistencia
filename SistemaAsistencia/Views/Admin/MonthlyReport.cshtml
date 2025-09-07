@@ -1,0 +1,87 @@
+﻿@model SistemaAsistencia.Models.MonthlyReportViewModel
+@{
+    ViewData["Title"] = "Reporte General Mensual";
+
+    // Helper para asignar una clase CSS según el estado
+    string GetStatusClass(AttendanceStatus status)
+    {
+        return status switch
+        {
+            AttendanceStatus.Attended => "table-success",
+            AttendanceStatus.LateArrival => "table-warning",
+            AttendanceStatus.EarlyDeparture => "table-info",
+            AttendanceStatus.Absent => "table-danger",
+            AttendanceStatus.Incomplete => "table-secondary",
+            _ => ""
+        };
+    }
+}
+
+<h1>@ViewData["Title"]</h1>
+<hr />
+
+<form asp-action="MonthlyReport" method="get" class="row g-3 align-items-end mb-4">
+    <div class="col-md-3">
+        <label asp-for="Month" class="form-label"></label>
+        <select asp-for="Month" class="form-select">
+            @for (int i = 1; i <= 12; i++)
+            {
+                <option value="@i">@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(i)</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label asp-for="Year" class="form-label"></label>
+        <input asp-for="Year" class="form-control" type="number" min="2020" max="@DateTime.Now.Year" />
+    </div>
+    <div class="col-md-3">
+        <button type="submit" class="btn btn-primary">Generar Reporte</button>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-bordered text-center" style="font-size: 0.8rem;">
+        <thead class="table-light">
+            <tr>
+                <th style="min-width: 150px;">Empleado</th>
+                @foreach (var day in Model.DayHeaders)
+                {
+                    <th>@day</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var employee in Model.EmployeeStatuses)
+            {
+                <tr>
+                    <td class="text-start fw-bold">@employee.UserName</td>
+                    @foreach (var day in Model.DayHeaders)
+                    {
+                        var status = employee.DailyStatuses[int.Parse(day)];
+                        <td class="@GetStatusClass(status.Status)" title="@status.Status.ToString()">
+                            @if (status.ClockInTime.HasValue)
+                            {
+                                <span>@status.ClockInTime?.ToString(@"hh\:mm")</span>
+
+                                <br>
+                            }
+                            @if (status.ClockOutTime.HasValue)
+                            {
+                                <span>@status.ClockOutTime?.ToString(@"hh\:mm")</span>
+                            }
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="mt-4">
+    <h5>Leyenda</h5>
+    <span class="badge bg-success">Asistió</span>
+    <span class="badge bg-warning text-dark">Llegada Tarde</span>
+    <span class="badge bg-info text-dark">Salida Anticipada</span>
+    <span class="badge bg-danger">Ausente</span>
+    <span class="badge bg-secondary">Incompleto</span>
+</div>

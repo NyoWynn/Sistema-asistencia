@@ -1,0 +1,27 @@
+﻿@model IEnumerable<SistemaAsistencia.Models.AttendanceRecord>
+@{
+    ViewData["Title"] = "Reporte de Salidas Anticipadas";
+}
+
+<h1>@ViewData["Title"]</h1>
+<hr />
+
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>Empleado</th>
+            <th>Fecha</th>
+            <th>Hora de Salida</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.User.Name)</td>
+                <td>@item.Timestamp.ToShortDateString()</td>
+                <td>@item.Timestamp.ToShortTimeString()</td>
+            </tr>
+        }
+    </tbody>
+</table>

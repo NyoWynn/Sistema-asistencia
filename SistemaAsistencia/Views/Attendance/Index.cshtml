@@ -1,0 +1,46 @@
+﻿@{
+    ViewData["Title"] = "Registro de Asistencia";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Bienvenido, @Context.Session.GetString("UserName")</h1>
+    <p>Utilice los botones para registrar su jornada laboral.</p>
+</div>
+
+<div class="d-flex justify-content-center gap-3 mt-4">
+
+    @if (ViewBag.AttendanceStatus == "CanClockIn")
+    {
+        <form asp-action="MarkAttendance" method="post">
+            @Html.AntiForgeryToken()
+            <button type="submit" name="recordType" value="Entrada" class="btn btn-success btn-lg px-5 py-3">
+                Marcar Entrada
+            </button>
+        </form>
+    }
+    else if (ViewBag.AttendanceStatus == "CanClockOut")
+    {
+        <form asp-action="MarkAttendance" method="post">
+            @Html.AntiForgeryToken()
+            <button type="submit" name="recordType" value="Salida" class="btn btn-danger btn-lg px-5 py-3">
+                Marcar Salida
+            </button>
+        </form>
+    }
+    else if (ViewBag.AttendanceStatus == "CompletedDay")
+    {
+        <div class="alert alert-success text-center">
+            <h4>Jornada laboral finalizada por hoy.</h4>
+        </div>
+    }
+
+</div>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-info mt-4">@TempData["Message"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger mt-4">@TempData["Error"]</div>
+}
