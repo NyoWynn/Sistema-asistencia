@@ -61,30 +61,55 @@ namespace SistemaAsistencia.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            // Aquí se añade una validación extra en el servidor para mayor seguridad
+            // Validar que el tipo de registro sea válido
+            if (string.IsNullOrEmpty(recordType) || (recordType != "Entrada" && recordType != "Salida"))
+            {
+                TempData["Error"] = "Tipo de registro no válido.";
+                return RedirectToAction("Index");
+            }
+
+            // Buscar el último registro del usuario para el día de hoy
             var lastRecordToday = await _context.AttendanceRecords
                 .Where(r => r.UserId == userId.Value && r.Timestamp.Date == DateTime.Today)
                 .OrderByDescending(r => r.Timestamp)
                 .FirstOrDefaultAsync();
 
-            // Prevenir marcar entrada si ya lo hizo, o salida si no ha entrado
-            if ((recordType == "Entrada" && lastRecordToday != null) ||
-                (recordType == "Salida" && (lastRecordToday == null || lastRecordToday.RecordType == "Salida")))
+            // Validaciones de negocio
+            if (recordType == "Entrada")
             {
-                TempData["Error"] = "Acción no válida.";
-                return RedirectToAction("Index");
+                // No puede marcar entrada si ya marcó entrada hoy
+                if (lastRecordToday != null && lastRecordToday.RecordType == "Entrada")
+                {
+                    TempData["Error"] = "Ya ha marcado su entrada hoy. Debe marcar salida primero.";
+                    return RedirectToAction("Index");
+                }
+            }
+            else if (recordType == "Salida")
+            {
+                // No puede marcar salida si no ha marcado entrada o ya marcó salida
+                if (lastRecordToday == null || lastRecordToday.RecordType == "Salida")
+                {
+                    TempData["Error"] = "Debe marcar su entrada antes de marcar salida.";
+                    return RedirectToAction("Index");
+                }
             }
 
+            // Crear el nuevo registro
             var record = new AttendanceRecord
             {
                 UserId = userId.Value,
                 Timestamp = DateTime.Now,
                 RecordType = recordType
             };
+
             _context.AttendanceRecords.Add(record);
             await _context.SaveChangesAsync();
 
-            TempData["Message"] = $"Se ha registrado su '{recordType}' a las {record.Timestamp:HH:mm:ss}";
+            // Mensaje de confirmación más detallado
+            var timeString = record.Timestamp.ToString("HH:mm:ss");
+            var dateString = record.Timestamp.ToString("dd/MM/yyyy");
+            TempData["Message"] = $"✅ {recordType} registrada exitosamente el {dateString} a las {timeString}";
+
             return RedirectToAction("Index");
         }
     }

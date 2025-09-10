@@ -14,7 +14,7 @@ namespace SistemaAsistencia.Models
         [Display(Name = "Tipo de Registro")]
         public string RecordType { get; set; } // "Entrada" o "Salida"
 
-        // Propiedad de navegación para que EF sepa la relación
+    
         public virtual User? User { get; set; }
     }
 }

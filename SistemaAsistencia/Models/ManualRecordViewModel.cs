@@ -22,7 +22,7 @@ namespace SistemaAsistencia.Models
         [DataType(DataType.Time)]
         public TimeSpan? ClockOutTime { get; set; }
 
-        // Lista de empleados para mostrar en el formulario
+ 
         public SelectList? Users { get; set; }
     }
 }

@@ -8310,11 +8310,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\ncamp\\source\\repos\\SistemaAsistencia\\SistemaAsistencia\\SistemaAsistencia.csproj",
+      "projectUniqueName": "C:\\Users\\ncamp\\sistema-asistencia\\SistemaAsistencia\\SistemaAsistencia.csproj",
       "projectName": "SistemaAsistencia",
-      "projectPath": "C:\\Users\\ncamp\\source\\repos\\SistemaAsistencia\\SistemaAsistencia\\SistemaAsistencia.csproj",
+      "projectPath": "C:\\Users\\ncamp\\sistema-asistencia\\SistemaAsistencia\\SistemaAsistencia.csproj",
       "packagesPath": "C:\\Users\\ncamp\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\ncamp\\source\\repos\\SistemaAsistencia\\SistemaAsistencia\\obj\\",
+      "outputPath": "C:\\Users\\ncamp\\sistema-asistencia\\SistemaAsistencia\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

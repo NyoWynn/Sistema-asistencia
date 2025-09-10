@@ -18,55 +18,115 @@ namespace SistemaAsistencia.Controllers
         }
 
         // GET: Admin
-     
-        public async Task<IActionResult> Index(string searchString)
+        public async Task<IActionResult> Index(string searchString, int pageNumber = 1, int pageSize = 10)
         {
             ViewData["CurrentFilter"] = searchString;
-            var users = from u in _context.Users
-                        select u;
+            ViewData["CurrentPage"] = pageNumber;
+            ViewData["PageSize"] = pageSize;
+
+            var usersQuery = from u in _context.Users
+                            select u;
 
             if (!String.IsNullOrEmpty(searchString))
             {
-                users = users.Where(u => u.Name.Contains(searchString));
+                usersQuery = usersQuery.Where(u => u.Name.Contains(searchString) || u.Email.Contains(searchString));
             }
 
-            return View(await users.ToListAsync());
+            // Contar el total de registros
+            var totalCount = await usersQuery.CountAsync();
+
+            // Aplicar paginación
+            var users = await usersQuery
+                .OrderBy(u => u.Name)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var pagedResult = new PagedResult<User>
+            {
+                Items = users,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            return View(pagedResult);
         }
 
      
 
         // GET: Admin/LateArrivalsReport
-        public async Task<IActionResult> LateArrivalsReport()
+        public async Task<IActionResult> LateArrivalsReport(int pageNumber = 1, int pageSize = 20)
         {
+            ViewData["CurrentPage"] = pageNumber;
+            ViewData["PageSize"] = pageSize;
+
             var lateTime = new TimeSpan(9, 30, 0);
-            var lateArrivals = await _context.AttendanceRecords
+            var lateArrivalsQuery = _context.AttendanceRecords
                 .Include(r => r.User) 
-                .Where(r => r.RecordType == "Entrada" && r.Timestamp.TimeOfDay > lateTime)
-                .OrderBy(r => r.Timestamp)
+                .Where(r => r.RecordType == "Entrada" && r.Timestamp.TimeOfDay > lateTime);
+
+            // Contar el total de registros
+            var totalCount = await lateArrivalsQuery.CountAsync();
+
+            // Aplicar paginación
+            var lateArrivals = await lateArrivalsQuery
+                .OrderByDescending(r => r.Timestamp)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
-            return View(lateArrivals);
+            var pagedResult = new PagedResult<AttendanceRecord>
+            {
+                Items = lateArrivals,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            return View(pagedResult);
         }
 
         // GET: Admin/EarlyDeparturesReport
-        public async Task<IActionResult> EarlyDeparturesReport()
+        public async Task<IActionResult> EarlyDeparturesReport(int pageNumber = 1, int pageSize = 20)
         {
+            ViewData["CurrentPage"] = pageNumber;
+            ViewData["PageSize"] = pageSize;
+
             var earlyTime = new TimeSpan(17, 30, 0);
-            var earlyDepartures = await _context.AttendanceRecords
+            var earlyDeparturesQuery = _context.AttendanceRecords
                 .Include(r => r.User) 
-                .Where(r => r.RecordType == "Salida" && r.Timestamp.TimeOfDay < earlyTime)
-                .OrderBy(r => r.Timestamp)
+                .Where(r => r.RecordType == "Salida" && r.Timestamp.TimeOfDay < earlyTime);
+
+            // Contar el total de registros
+            var totalCount = await earlyDeparturesQuery.CountAsync();
+
+            // Aplicar paginación
+            var earlyDepartures = await earlyDeparturesQuery
+                .OrderByDescending(r => r.Timestamp)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
-            return View(earlyDepartures);
+            var pagedResult = new PagedResult<AttendanceRecord>
+            {
+                Items = earlyDepartures,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            return View(pagedResult);
         }
 
         // GET: Admin/AbsenceReport
-        public async Task<IActionResult> AbsenceReport(DateTime? reportDate)
+        public async Task<IActionResult> AbsenceReport(DateTime? reportDate, int pageNumber = 1, int pageSize = 20)
         {
             // Si no se especifica una fecha, usamos el día de hoy
             var date = reportDate ?? DateTime.Today;
             ViewData["ReportDate"] = date.ToString("yyyy-MM-dd");
+            ViewData["CurrentPage"] = pageNumber;
+            ViewData["PageSize"] = pageSize;
 
             // Obtenemos los IDs de los usuarios que SÍ registraron asistencia en esa fecha
             var usersWithAttendance = await _context.AttendanceRecords
@@ -76,11 +136,28 @@ namespace SistemaAsistencia.Controllers
                 .ToListAsync();
 
             // Buscamos a todos los usuarios que NO están en la lista anterior
-            var absentUsers = await _context.Users
-                .Where(u => !u.IsAdmin && !usersWithAttendance.Contains(u.Id))
+            var absentUsersQuery = _context.Users
+                .Where(u => !u.IsAdmin && !usersWithAttendance.Contains(u.Id));
+
+            // Contar el total de registros
+            var totalCount = await absentUsersQuery.CountAsync();
+
+            // Aplicar paginación
+            var absentUsers = await absentUsersQuery
+                .OrderBy(u => u.Name)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
-            return View(absentUsers);
+            var pagedResult = new PagedResult<User>
+            {
+                Items = absentUsers,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            return View(pagedResult);
         }
 
       
@@ -237,7 +314,7 @@ namespace SistemaAsistencia.Controllers
                 Year = reportYear
             };
 
-            // 2. Crear las cabeceras de los días (1, 2, 3, ...)
+            
             for (int i = 1; i <= endDate.Day; i++)
             {
                 viewModel.DayHeaders.Add(i.ToString());

@@ -1,0 +1,84 @@
+@model dynamic
+
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+    var currentFilter = ViewData["CurrentFilter"]?.ToString();
+    var reportDate = ViewData["ReportDate"]?.ToString();
+}
+
+<!-- Información de paginación -->
+<div class="row mt-3">
+    <div class="col-md-6">
+        <p class="text-muted">
+            Mostrando @((Model.PageNumber - 1) * Model.PageSize + 1) a 
+            @(Math.Min(Model.PageNumber * Model.PageSize, Model.TotalCount)) 
+            de @Model.TotalCount registros
+        </p>
+    </div>
+    <div class="col-md-6">
+        <div class="d-flex justify-content-end">
+            <select name="pageSize" class="form-select me-2" style="width: auto;" onchange="changePageSize(this.value)">
+                <option value="10" selected="@(Model.PageSize == 10)">10 por página</option>
+                <option value="20" selected="@(Model.PageSize == 20)">20 por página</option>
+                <option value="50" selected="@(Model.PageSize == 50)">50 por página</option>
+                <option value="100" selected="@(Model.PageSize == 100)">100 por página</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<!-- Navegación de páginas -->
+@if (Model.TotalPages > 1)
+{
+    <nav aria-label="Navegación de páginas">
+        <ul class="pagination justify-content-center">
+            <!-- Primera página -->
+            @if (Model.HasPreviousPage)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="@Url.Action(action, controller, new { pageNumber = 1, pageSize = Model.PageSize, searchString = currentFilter, reportDate = reportDate })">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="@Url.Action(action, controller, new { pageNumber = Model.PageNumber - 1, pageSize = Model.PageSize, searchString = currentFilter, reportDate = reportDate })">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+            }
+
+            <!-- Páginas numeradas -->
+            @for (int i = Model.StartPage; i <= Model.EndPage; i++)
+            {
+                <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                    <a class="page-link" href="@Url.Action(action, controller, new { pageNumber = i, pageSize = Model.PageSize, searchString = currentFilter, reportDate = reportDate })">@i</a>
+                </li>
+            }
+
+            <!-- Siguiente página -->
+            @if (Model.HasNextPage)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="@Url.Action(action, controller, new { pageNumber = Model.PageNumber + 1, pageSize = Model.PageSize, searchString = currentFilter, reportDate = reportDate })">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="@Url.Action(action, controller, new { pageNumber = Model.TotalPages, pageSize = Model.PageSize, searchString = currentFilter, reportDate = reportDate })">
+                        <i class="bi bi-chevron-double-right"></i>
+                    </a>
+                </li>
+            }
+        </ul>
+    </nav>
+}
+
+<script>
+function changePageSize(pageSize) {
+    const url = new URL(window.location);
+    url.searchParams.set('pageSize', pageSize);
+    url.searchParams.set('pageNumber', '1');
+    window.location.href = url.toString();
+}
+</script>

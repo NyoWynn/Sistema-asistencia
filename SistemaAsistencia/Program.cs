@@ -3,23 +3,22 @@ using SistemaAsistencia.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- INICIO DE LA CONFIGURACI”N IMPORTANTE ---
 
-// 1. Obtener la cadena de conexiÛn desde appsettings.json
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// 2. A—ADIR Y CONFIGURAR EL DBCONTEXT.
-//    Esta es la lÌnea que resuelve el error. Le "enseÒa" a la aplicaciÛn
-//    cÛmo crear el ApplicationDbContext.
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString, sqlOptions =>
+    {
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 3,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorNumbersToAdd: null);
+    }));
 
-// --- FIN DE LA CONFIGURACI”N IMPORTANTE ---
 
-// AÒadir servicios para controladores y vistas
 builder.Services.AddControllersWithViews();
 
-// AÒadir soporte para Sesiones (lo usaremos para el Login)
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(20);
@@ -28,6 +27,25 @@ builder.Services.AddSession(options =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    
+    try
+    {
+    
+        context.Database.Migrate();
+        
+       
+        await CreateDefaultAdminUser(context);
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Error al inicializar la base de datos");
+    }
+}
 
 if (!app.Environment.IsDevelopment())
 {
@@ -40,12 +58,38 @@ app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthorization();
 
-// Habilitar el uso de Sesiones
+
 app.UseSession();
 
-// Cambiar la ruta inicial a nuestra p·gina de Login
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=Login}/{id?}");
 
 app.Run();
+
+
+static async Task CreateDefaultAdminUser(ApplicationDbContext context)
+{
+    // Verificar si ya existe un usuario administrador
+    var adminExists = await context.Users.AnyAsync(u => u.IsAdmin);
+    
+    if (!adminExists)
+    {
+        var defaultAdmin = new User
+        {
+            Name = "Administrador",
+            Email = "admin@sistema.com",
+            Password = "admin123", 
+            IsAdmin = true
+        };
+        
+        context.Users.Add(defaultAdmin);
+        await context.SaveChangesAsync();
+        
+        Console.WriteLine("‚úÖ Usuario administrador creado:");
+        Console.WriteLine("   üìß Email: admin@sistema.com");
+        Console.WriteLine("   üîë Contrase√±a: admin123");
+        Console.WriteLine("   ‚ö†Ô∏è  IMPORTANTE: Cambia la contrase√±a despu√©s del primer login");
+    }
+}

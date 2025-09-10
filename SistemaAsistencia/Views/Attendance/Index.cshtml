@@ -7,34 +7,46 @@
     <p>Utilice los botones para registrar su jornada laboral.</p>
 </div>
 
-<div class="d-flex justify-content-center gap-3 mt-4">
-
-    @if (ViewBag.AttendanceStatus == "CanClockIn")
-    {
-        <form asp-action="MarkAttendance" method="post">
-            @Html.AntiForgeryToken()
-            <button type="submit" name="recordType" value="Entrada" class="btn btn-success btn-lg px-5 py-3">
-                Marcar Entrada
-            </button>
-        </form>
-    }
-    else if (ViewBag.AttendanceStatus == "CanClockOut")
-    {
-        <form asp-action="MarkAttendance" method="post">
-            @Html.AntiForgeryToken()
-            <button type="submit" name="recordType" value="Salida" class="btn btn-danger btn-lg px-5 py-3">
-                Marcar Salida
-            </button>
-        </form>
-    }
-    else if (ViewBag.AttendanceStatus == "CompletedDay")
-    {
-        <div class="alert alert-success text-center">
-            <h4>Jornada laboral finalizada por hoy.</h4>
+<!-- Reloj elegante -->
+<div class="clock-container text-center mb-5">
+    <div class="clock-wrapper">
+        <div class="clock-face">
+            <div class="clock-time" id="currentTime"></div>
+            <div class="clock-date" id="currentDate"></div>
         </div>
-    }
-
+    </div>
 </div>
+
+<div class="d-flex justify-content-center gap-4 mt-4">
+    <!-- Botón de Entrada -->
+    <form asp-action="MarkAttendance" method="post" class="d-inline">
+        @Html.AntiForgeryToken()
+        <button type="submit" name="recordType" value="Entrada" 
+                class="btn btn-success btn-lg px-5 py-3 attendance-btn @(ViewBag.AttendanceStatus == "CanClockIn" ? "" : "disabled")"
+                @(ViewBag.AttendanceStatus == "CanClockIn" ? "" : "disabled")>
+            <i class="fas fa-sign-in-alt me-2"></i>
+            Marcar Entrada
+        </button>
+    </form>
+
+    <!-- Botón de Salida -->
+    <form asp-action="MarkAttendance" method="post" class="d-inline">
+        @Html.AntiForgeryToken()
+        <button type="submit" name="recordType" value="Salida" 
+                class="btn btn-danger btn-lg px-5 py-3 attendance-btn @(ViewBag.AttendanceStatus == "CanClockOut" ? "" : "disabled")"
+                @(ViewBag.AttendanceStatus == "CanClockOut" ? "" : "disabled")>
+            <i class="fas fa-sign-out-alt me-2"></i>
+            Marcar Salida
+        </button>
+    </form>
+</div>
+
+@if (ViewBag.AttendanceStatus == "CompletedDay")
+{
+    <div class="alert alert-success text-center mt-4">
+        <h4><i class="fas fa-check-circle me-2"></i>Jornada laboral finalizada por hoy.</h4>
+    </div>
+}
 
 @if (TempData["Message"] != null)
 {

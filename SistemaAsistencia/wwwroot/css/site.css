@@ -20,3 +20,130 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+/* Estilos para el reloj elegante */
+.clock-container {
+  margin: 2rem 0;
+}
+
+.clock-wrapper {
+  display: inline-block;
+  padding: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.clock-wrapper::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transform: rotate(45deg);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.clock-face {
+  position: relative;
+  z-index: 1;
+  color: white;
+  text-align: center;
+}
+
+.clock-time {
+  font-size: 3rem;
+  font-weight: bold;
+  font-family: 'Courier New', monospace;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  margin-bottom: 0.5rem;
+  letter-spacing: 2px;
+}
+
+.clock-date {
+  font-size: 1.2rem;
+  font-weight: 300;
+  opacity: 0.9;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Estilos para los botones de asistencia */
+.attendance-btn {
+  transition: all 0.3s ease;
+  border-radius: 15px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+}
+
+.attendance-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.attendance-btn:active:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.attendance-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.attendance-btn.btn-success {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  border: none;
+}
+
+.attendance-btn.btn-danger {
+  background: linear-gradient(135deg, #dc3545, #fd7e14);
+  border: none;
+}
+
+.attendance-btn i {
+  font-size: 1.2em;
+}
+
+/* Animación de pulso para botones activos */
+.attendance-btn:not(.disabled) {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(0, 123, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 123, 255, 0); }
+}
+
+/* Responsive design para el reloj */
+@media (max-width: 768px) {
+  .clock-time {
+    font-size: 2rem;
+  }
+  
+  .clock-date {
+    font-size: 1rem;
+  }
+  
+  .clock-wrapper {
+    padding: 1.5rem;
+  }
+  
+  .attendance-btn {
+    font-size: 0.9rem;
+    padding: 0.75rem 1.5rem !important;
+  }
+}
